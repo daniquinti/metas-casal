@@ -1,7 +1,27 @@
+conn = get_connection()
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS registros (
+    data TEXT,
+    pessoa TEXT,
+    habito TEXT,
+    feito INTEGER
+)
+""")
+
+conn.commit()
+
+
+import sqlite3
 import streamlit as st
 from datetime import date
 import pandas as pd
 import os
+
+def get_connection():
+    return sqlite3.connect("dados.db", check_same_thread=False)
+
 
 st.set_page_config(page_title="Rotina do Casal", layout="centered")
 st.title("Checklist Diário 💙")
@@ -53,7 +73,8 @@ if not os.path.exists(arquivo):
         columns=["data", "pessoa", "habito", "feito"]
     ).to_csv(arquivo, index=False)
 
-df = pd.read_csv(arquivo)
+df = pd.read_sql("SELECT * FROM registros", conn)
+
 
 # -----------------------
 # Filtrar dados do dia
@@ -415,6 +436,20 @@ if st.button("💾 Salvar dia"):
         })
 
     df = pd.concat([df, pd.DataFrame(novos_registros)], ignore_index=True)
-    df.to_csv(arquivo, index=False)
+    # Remove registros antigos do dia/pessoa
+cursor.execute("""
+DELETE FROM registros
+WHERE pessoa = ? AND data = ?
+""", (pessoa, str(data_selecionada)))
+
+# Insere novos registros
+for habito, feito in checklist.items():
+    cursor.execute("""
+    INSERT INTO registros (data, pessoa, habito, feito)
+    VALUES (?, ?, ?, ?)
+    """, (str(data_selecionada), pessoa, habito, 1 if feito else 0))
+
+conn.commit()
+
 
     st.success("Dia salvo com sucesso! ✅")
