@@ -28,7 +28,7 @@ conn.commit()
 # CONFIGURAÇÃO
 # =========================================================
 st.set_page_config(page_title="Rotina dos Belezinhas", layout="centered")
-st.title("Checklist Diário 💙")
+st.title("Checklist Diário dos Belezinhas 💙")
 
 # =========================================================
 # PESSOA E DATA (FUSO BR + ESTADO CONTROLADO)
