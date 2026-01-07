@@ -1,3 +1,12 @@
+import sqlite3
+import streamlit as st
+from datetime import date
+import pandas as pd
+import altair as alt
+
+def get_connection():
+    return sqlite3.connect("dados.db", check_same_thread=False)
+
 conn = get_connection()
 cursor = conn.cursor()
 
@@ -9,18 +18,8 @@ CREATE TABLE IF NOT EXISTS registros (
     feito INTEGER
 )
 """)
-
 conn.commit()
 
-
-import sqlite3
-import streamlit as st
-from datetime import date
-import pandas as pd
-import os
-
-def get_connection():
-    return sqlite3.connect("dados.db", check_same_thread=False)
 
 
 st.set_page_config(page_title="Rotina do Casal", layout="centered")
@@ -66,12 +65,7 @@ st.subheader(f"Hábitos de {pessoa}")
 # -----------------------
 # Arquivo de dados
 # -----------------------
-arquivo = "registro_diario.csv"
 
-if not os.path.exists(arquivo):
-    pd.DataFrame(
-        columns=["data", "pessoa", "habito", "feito"]
-    ).to_csv(arquivo, index=False)
 
 df = pd.read_sql("SELECT * FROM registros", conn)
 
@@ -417,39 +411,18 @@ with col2:
 # Salvar
 # -----------------------
 if st.button("💾 Salvar dia"):
-    # remove registros antigos daquele dia
-    df = df[
-        ~(
-            (df["pessoa"] == pessoa) &
-            (df["data"] == str(data_selecionada))
-        )
-    ]
-
-    novos_registros = []
+    cursor.execute("""
+    DELETE FROM registros
+    WHERE pessoa = ? AND data = ?
+    """, (pessoa, str(data_selecionada)))
 
     for habito, feito in checklist.items():
-        novos_registros.append({
-            "data": str(data_selecionada),
-            "pessoa": pessoa,
-            "habito": habito,
-            "feito": 1 if feito else 0
-        })
+        cursor.execute("""
+        INSERT INTO registros (data, pessoa, habito, feito)
+        VALUES (?, ?, ?, ?)
+        """, (str(data_selecionada), pessoa, habito, 1 if feito else 0))
 
-    df = pd.concat([df, pd.DataFrame(novos_registros)], ignore_index=True)
-    # Remove registros antigos do dia/pessoa
-cursor.execute("""
-DELETE FROM registros
-WHERE pessoa = ? AND data = ?
-""", (pessoa, str(data_selecionada)))
-
-# Insere novos registros
-for habito, feito in checklist.items():
-    cursor.execute("""
-    INSERT INTO registros (data, pessoa, habito, feito)
-    VALUES (?, ?, ?, ?)
-    """, (str(data_selecionada), pessoa, habito, 1 if feito else 0))
-
-conn.commit()
-
+    conn.commit()
 
     st.success("Dia salvo com sucesso! ✅")
+
