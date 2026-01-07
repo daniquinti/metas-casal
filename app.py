@@ -40,6 +40,14 @@ hoje_br = datetime.now(fuso_brasil).date()
 
 data_selecionada = st.date_input("Data", value=hoje_br)
 
+if "ultima_data" not in st.session_state:
+    st.session_state.ultima_data = data_selecionada
+
+if data_selecionada != st.session_state.ultima_data:
+    st.session_state.atualizar = False
+    st.session_state.ultima_data = data_selecionada
+
+
 # =========================================================
 # HÁBITOS
 # =========================================================
