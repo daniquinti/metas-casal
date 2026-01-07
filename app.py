@@ -1,8 +1,9 @@
 import sqlite3
 import streamlit as st
-from datetime import date
+from datetime import date, datetime
 import pandas as pd
 import altair as alt
+import pytz
 
 # -----------------------
 # Banco de dados
@@ -33,8 +34,13 @@ st.title("Checklist Diário 💙")
 # Pessoa e data
 # -----------------------
 pessoa = st.selectbox("Quem está usando?", ["Daniela", "Henrique"])
+fuso_brasil = pytz.timezone("America/Sao_Paulo")
+hoje_br = datetime.now(fuso_brasil).date()
+data_selecionada = st.date_input(
+    "Data",
+    value=hoje_br
+)
 
-data_selecionada = st.date_input("Data", value=date.today())
 
 # -----------------------
 # Hábitos fixos
