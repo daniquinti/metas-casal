@@ -67,13 +67,19 @@ habitos = {
         "Beber 3,5L de água",
         "Estudar",
         "Ler",
-        "Menos de 1,5h no celular"
+        "Menos de 1,5h no celular",
+        "Sem doce",
+        "Hobbie"
     ],
     "Henrique": [
         "Exercício",
         "Ler",
         "Água com limão",
-        "Dormir antes da 00:00"
+        "Dormir antes da 00:00",
+        "Creatina",
+        "Vitaminas",
+        "Frutas",
+        "Tomar sol"
     ]
 }
 
