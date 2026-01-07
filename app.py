@@ -31,21 +31,31 @@ st.set_page_config(page_title="Rotina do Casal", layout="centered")
 st.title("Checklist Diário 💙")
 
 # =========================================================
-# PESSOA E DATA (FUSO BR)
+# PESSOA E DATA (FUSO BR + ESTADO CONTROLADO)
 # =========================================================
 pessoa = st.selectbox("Quem está usando?", ["Daniela", "Henrique"])
 
 fuso_brasil = pytz.timezone("America/Sao_Paulo")
 hoje_br = datetime.now(fuso_brasil).date()
 
-data_selecionada = st.date_input("Data", value=hoje_br)
+# Inicializa data controlada
+if "data_atual" not in st.session_state:
+    st.session_state.data_atual = hoje_br
 
-if "ultima_data" not in st.session_state:
-    st.session_state.ultima_data = data_selecionada
+# Input controlado
+st.date_input(
+    "Data",
+    value=st.session_state.data_atual,
+    key="input_data",
+    on_change=lambda: setattr(
+        st.session_state,
+        "data_atual",
+        st.session_state.input_data
+    )
+)
 
-if data_selecionada != st.session_state.ultima_data:
-    st.session_state.atualizar = False
-    st.session_state.ultima_data = data_selecionada
+data_selecionada = st.session_state.data_atual
+
 
 
 # =========================================================
@@ -86,7 +96,12 @@ checklist = {}
 for habito in habitos[pessoa]:
     valor = df_dia[df_dia["habito"] == habito]["feito"]
     marcado = bool(valor.iloc[0]) if not valor.empty else False
-    checklist[habito] = st.checkbox(habito, value=marcado)
+    checklist[habito] = st.checkbox(
+    habito,
+    value=marcado,
+    key=f"{pessoa}_{data_selecionada}_{habito}"
+)
+
 
 # =========================================================
 # % DO DIA
