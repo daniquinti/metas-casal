@@ -136,4 +136,48 @@ diario = diario[diario["ano_semana"] == semana_sel]
 
 # Dia da semana
 mapa_dias = {0: "Seg", 1: "Ter", 2: "Qua", 3: "Qui", 4: "Sex", 5: "Sáb", 6: "Dom"}
-ordem_dias = list(mapa_dias.val
+ordem_dias = list(mapa_dias.values())
+
+diario["dia"] = diario["data"].dt.weekday.map(mapa_dias)
+
+base = pd.DataFrame({"dia": ordem_dias})
+grafico = base.merge(
+    diario[diario["pessoa"] == pessoa][["dia", "percentual"]],
+    on="dia",
+    how="left"
+).fillna(0)
+
+# Gráfico
+META = 70
+
+barras = alt.Chart(grafico).mark_bar().encode(
+    x=alt.X("dia:N", sort=ordem_dias),
+    y=alt.Y("percentual:Q", scale=alt.Scale(domain=[0, 100])),
+    color=alt.condition(
+        alt.datum.percentual >= META,
+        alt.value("#2ecc71"),
+        alt.value("#e74c3c")
+    )
+)
+
+textos = alt.Chart(grafico).mark_text(dy=-10).encode(
+    x="dia:N",
+    y="percentual:Q",
+    text=alt.condition(
+        "datum.percentual > 0",
+        alt.Text("percentual:Q", format=".0f"),
+        alt.value("")
+    )
+)
+
+st.altair_chart(barras + textos, use_container_width=True)
+
+# -----------------------
+# Meta semanal
+# -----------------------
+media_semana = grafico["percentual"].mean()
+
+if media_semana >= META:
+    st.success(f"🎯 Meta semanal batida! ({media_semana:.0f}%)")
+else:
+    st.error(f"⚠️ Meta semanal não atingida ({media_semana:.0f}%)")
