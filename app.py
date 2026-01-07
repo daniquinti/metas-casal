@@ -27,7 +27,7 @@ conn.commit()
 # =========================================================
 # CONFIGURAÇÃO
 # =========================================================
-st.set_page_config(page_title="Rotina do Casal", layout="centered")
+st.set_page_config(page_title="Rotina dos Belezinhas", layout="centered")
 st.title("Checklist Diário 💙")
 
 # =========================================================
